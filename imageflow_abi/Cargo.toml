@@ -9,7 +9,7 @@ edition = "2018"
 [lib]
 name = "imageflow"
 doc = true
-crate-type = ["cdylib"]
+crate-type = ["cdylib","staticlib"]
 doctest = false
 
 [dependencies]
