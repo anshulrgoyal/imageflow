@@ -6,7 +6,7 @@ jobs:
   build:
     strategy:
       matrix:
-        platform: [ubuntu-16.04]
+        platform: [ubuntu-latest]
 
     runs-on: ${{ matrix.platform }}
 
@@ -21,7 +21,7 @@ jobs:
       - name: Install MUSL library
         run: |
           sudo apt-get update 
-          sudo apt-get install musl-tools musl musl-dev libssl-dev linux-musl-dev
+          sudo apt-get install musl-tools musl musl-dev libssl-dev
       - name: Linking G++
         run: sudo ln -s /bin/g++ /bin/musl-g++
       - name: Add target
