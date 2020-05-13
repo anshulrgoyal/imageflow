@@ -23,7 +23,7 @@ jobs:
           sudo apt-get update 
           sudo apt-get install musl-tools musl musl-dev libssl-dev pkg-config g++
       - name: Linking G++
-        run: sudo ln -s /bin/g++ /bin/musl-g++
+        run: alias musl-g++=g++
       - name: Add target
         run: rustup target add x86_64-unknown-linux-musl
       - name: Cache cargo index
