@@ -19,7 +19,9 @@ jobs:
           path: ~/.cargo/registry
           key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
       - name: Install MUSL library
-        run: sudo apt-get install musl-tools musl musl-dev libssl-dev
+        run: |
+          sudo apt-get update 
+          sudo apt-get install musl-tools musl musl-dev libssl-dev
       - name: Linking G++
         run: sudo ln -s /bin/g++ /bin/musl-g++
       - name: Add target
