@@ -21,7 +21,7 @@ jobs:
       - name: Install MUSL library
         run: |
           sudo apt-get update 
-          sudo apt-get install musl-tools musl musl-dev libssl-dev
+          sudo apt-get install musl-tools musl musl-dev libssl-dev pkg-config
       - name: Linking G++
         run: sudo ln -s /bin/g++ /bin/musl-g++
       - name: Add target
