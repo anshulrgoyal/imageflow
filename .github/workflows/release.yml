@@ -36,8 +36,6 @@ jobs:
         with:
           path: target
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
-      - name: Linking G++
-        run: sudo ln -s /bin/g++ /bin/musl-g++
       - name: Test MUSL
         run: musl-g++ --version
       - name: Build
