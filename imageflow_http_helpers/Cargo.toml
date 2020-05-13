@@ -15,5 +15,5 @@ hyper-native-tls = { version = "*"}
 
 
 [target.'cfg(not(any(target_os = "windows", target_os = "macos")))'.dependencies]
-openssl = { version = "0.10"}
+openssl = { version = "0.10", features = ["vendored"] }
 hyper-openssl = { version = "0.8"}
