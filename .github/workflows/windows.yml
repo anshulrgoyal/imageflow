@@ -26,10 +26,10 @@ jobs:
         with:
           path: target
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
-      - name: |
-          Build
+      - name: Build
+        run: |
           rustup target add x86_64-pc-windows-gnu
-        run: RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu
+          RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu
         shell: bash
       - uses: actions/upload-artifact@v2
         with:
