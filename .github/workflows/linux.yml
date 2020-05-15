@@ -6,15 +6,35 @@ jobs:
   build:
     strategy:
       matrix:
-        platform: [ubuntu-latest]
+        platform: [ubuntu-latest, ubuntu-16.04]
+      include:
+        - name: ubuntu-18.04-gcc-9
+          os: ubuntu-18.04
+          compiler: gcc
+          version: "9"
 
     runs-on: ${{ matrix.platform }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@master
+      - name: Cache cargo registry
+        uses: actions/cache@v1
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+      - name: Cache cargo index
+        uses: actions/cache@v1
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo1073325810292-index-${{ hashFiles('**/Cargo.lock') }}
+      - name: Cache cargo build
+        uses: actions/cache@v1
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
       - name: Build
         run: |
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test
           sudo apt-get update 
           sudo apt-get install musl-tools musl musl-dev libssl-dev pkg-config g++
           sudo cp /usr/bin/g++ /usr/bin/musl-g++
