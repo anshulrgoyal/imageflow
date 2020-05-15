@@ -28,6 +28,7 @@ jobs:
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
       - name: Build
         run: RUSTFLAGS='-C target-feature=+crt-static' cargo build --release
+        shell: bash
       - uses: actions/upload-artifact@v2
         with:
           name: windows-artifect
