@@ -7,6 +7,9 @@ on:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        cpu: [native, haswell]
     runs-on: windows-latest
 
     steps:
@@ -27,11 +30,12 @@ jobs:
           path: target
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
       - name: Build
-        run: |
-          rustup target add x86_64-pc-windows-gnu
-          RUSTFLAGS='-C target-feature=+crt-static' cargo build --release --target x86_64-pc-windows-gnu
+        run: RUSTFLAGS='-C target-feature=+crt-static target-cpu=${{matrix.cpu}}' cargo build --release --package imageflow_abi
+        shell: bash
+      - name: Zip file
+        run: tar -czvf imageflow_windows_x86_${{matrix.cpu}}.tar.gz ./target/release/imageflow.dll
         shell: bash
       - uses: actions/upload-artifact@v2
         with:
           name: windows-artifect
-          path: .\target\x86_64-pc-windows-gnu\release\*imageflow*
+          path: .\*imageflow*
