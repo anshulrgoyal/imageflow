@@ -1,9 +1,9 @@
 name: Windows
 
 on:
-  push:
-    branches: master
-  pull_request:
+  release:
+    types:
+      - published
 
 jobs:
   build:
@@ -35,7 +35,11 @@ jobs:
       - name: Zip file
         run: tar -czvf imageflow_windows_x86_${{matrix.cpu}}.tar.gz ./target/release/imageflow.dll
         shell: bash
-      - uses: actions/upload-artifact@v2
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: Shopify/upload-to-release@master
         with:
-          name: windows-artifect-native
-          path: .\imageflow_windows_x86_${{matrix.cpu}}.tar.gz
+          path: .\imageflow_macos_x86_${{matrix.cpu}}.tar.gz
+          name: imageflow_macos_x86_${{matrix.cpu}}.tar.gz
+          content-type: application/zip
+          repo-token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,15 +1,15 @@
 name: Macos
 
 on:
-  push:
-    branches: master
-  pull_request:
+  release:
+    types:
+      - published
 
 jobs:
   build:
     strategy:
       matrix:
-        cpu: [native, haswell]
+        cpu: [native]
     runs-on: macos-latest
 
     steps:
@@ -36,5 +36,13 @@ jobs:
         run: tar -czvf imageflow_macos_x86_${{matrix.cpu}}.tar.gz ./target/release/libimageflow.a
       - uses: actions/upload-artifact@v2
         with:
-          name: my-artifact
+          name: macos
+          path:
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: Shopify/upload-to-release@master
+        with:
           path: ./imageflow_macos_x86_${{matrix.cpu}}.tar.gz
+          name: imageflow_macos_x86_${{matrix.cpu}}.tar.gz
+          content-type: application/zip
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
