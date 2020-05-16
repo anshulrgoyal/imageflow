@@ -37,5 +37,5 @@ jobs:
         shell: bash
       - uses: actions/upload-artifact@v2
         with:
-          name: windows-artifect
-          path: .\*imageflow*
+          name: windows-artifect-native
+          path: .\imageflow_windows_x86_*.tar.gz
