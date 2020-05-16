@@ -7,6 +7,9 @@ on:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        cpu: [native, haswell]
     runs-on: macos-latest
 
     steps:
@@ -27,9 +30,11 @@ jobs:
           path: target
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
       - name: Build
-        run: RUSTFLAGS='-C target-feature=+crt-static' cargo build --release
+        run: RUSTFLAGS='-C target-feature=+crt-static -C target-cpu=${{matrix.cpu}}' cargo build --release
         shell: bash
+      - name: Zip file
+        run: tar -czvf imageflow_macos_x86_${{matrix.cpu}}.tar.gz ./target/release/libimageflow.a
       - uses: actions/upload-artifact@v2
         with:
-          name: macos-artifect
-          path: ./target/release/*imageflow*
+          name: my-artifact
+          path: ./imageflow_macos_x86_${{matrix.cpu}}.tar.gz
