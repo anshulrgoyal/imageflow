@@ -45,7 +45,7 @@ jobs:
         id: upload-release-asset
         uses: Shopify/upload-to-release@master
         with:
-          path: ./imageflow_macos_x86_${{matrix.cpu}}.tar.gz
-          name: imageflow_macos_x86_${{matrix.cpu}}.tar.gz
+          path: ./imageflow_linux_x86_${{matrix.cpu}}.tar.gz
+          name: imageflow_linux_x86_${{matrix.cpu}}.tar.gz
           content-type: application/zip
           repo-token: ${{ secrets.GITHUB_TOKEN }}

@@ -34,10 +34,6 @@ jobs:
         shell: bash
       - name: Zip file
         run: tar -czvf imageflow_macos_x86_${{matrix.cpu}}.tar.gz ./target/release/libimageflow.a
-      - uses: actions/upload-artifact@v2
-        with:
-          name: macos
-          path:
       - name: Upload Release Asset
         id: upload-release-asset
         uses: Shopify/upload-to-release@master
