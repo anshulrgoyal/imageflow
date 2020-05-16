@@ -30,7 +30,7 @@ jobs:
           path: target
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
       - name: Build
-        run: RUSTFLAGS='-C target-feature=+crt-static target-cpu=${{matrix.cpu}}' cargo build --release --package imageflow_abi
+        run: RUSTFLAGS='-C target-feature=+crt-static -C target-cpu=${{matrix.cpu}}' cargo build --release --package imageflow_abi
         shell: bash
       - name: Zip file
         run: tar -czvf imageflow_windows_x86_${{matrix.cpu}}.tar.gz ./target/release/imageflow.dll
