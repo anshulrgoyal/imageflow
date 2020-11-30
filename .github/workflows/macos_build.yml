@@ -55,6 +55,8 @@ jobs:
             cp bindings/headers/*.h  ./artifacts/staging/headers/
             cp bindings/headers/imageflow_default.h  ./artifacts/staging/imageflow.h
             cp ./ci/packaging_extras/{install,uninstall}.sh ./artifacts/staging
+            rm ./artifacts/staging/*.{o,d,rlib} || true
+            rm ./artifacts/staging/*-* || true
             (
               cd ./artifacts/staging
               tar czf "./archive.tar.gz" ./*
