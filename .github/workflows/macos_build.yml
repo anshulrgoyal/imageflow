@@ -2,9 +2,9 @@
 name: Test Linux
 
 on:
-    release:
-        types:
-            - published
+  release:
+    types:
+      - published
 
 jobs:
   build:
@@ -13,8 +13,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@master
       - uses: FranzDiebold/github-env-vars-action@v1.3.0
-      - name: Install nasm and dssim
-        run: brew install nasm dssim
+      - name: Install nasm, dssim and valgrind
+        run: brew install nasm dssim valgrind
+      - name: Count Unsafe code
+        run: |
+          (cd imageflow_core && cargo count --unsafe-statistics)
+          (cd imageflow_abi && cargo count --unsafe-statistics)
+          (cd imageflow_tool && cargo count --unsafe-statistics)
+          (cd imageflow_riapi && cargo count --unsafe-statistics)
+          (cd imageflow_helpers && cargo count --unsafe-statistics)
+          (cd imageflow_types && cargo count --unsafe-statistics)
+          (cd imageflow_server && cargo count --unsafe-statistics)
+          (cd c_components/lib && cargo count --unsafe-statistics)
       - name: Check Build
         run: cargo check --all
       - name: Build Release
@@ -40,31 +50,35 @@ jobs:
           FETCH_COMMIT_SUFFIX: mac64
       - name: Test Release
         run: cargo test --all --release
+      - name: Test Under Valgrind
+        run: ./valgrind_existing.sh   1>&6
+        env:
+          TARGET_DIR: target
       - name: Build Docs
         run: cargo doc --all --release --no-deps
       - name: Create Artifacts Header
         run: |
-            mkdir -p ./artifacts/staging/headers || true
-            (
-              cd ./${TARGET_DIR}doc
-              tar czf "../docs.tar.gz" ./*
-            )
-            mv ./${TARGET_DIR}docs.tar.gz ./artifacts/staging/
+          mkdir -p ./artifacts/staging/headers || true
+          (
+            cd ./${TARGET_DIR}doc
+            tar czf "../docs.tar.gz" ./*
+          )
+          mv ./${TARGET_DIR}docs.tar.gz ./artifacts/staging/
 
-            cp -R ./${TARGET_DIR}release/{imageflow_,libimageflow}*  ./artifacts/staging/
-            cp bindings/headers/*.h  ./artifacts/staging/headers/
-            cp bindings/headers/imageflow_default.h  ./artifacts/staging/imageflow.h
-            cp ./ci/packaging_extras/{install,uninstall}.sh ./artifacts/staging
-            rm ./artifacts/staging/*.{o,d,rlib} || true
-            rm ./artifacts/staging/*-* || true
-            (
-              cd ./artifacts/staging
-              tar czf "./archive.tar.gz" ./*
-            )
-            mkdir -p "./artifacts/upload/$(dirname "${ARTIFACT_UPLOAD_PATH}")" || true
-            cp "${ARTIFACT_ARCHIVE_NAME}" "./artifacts/upload/${ARTIFACT_UPLOAD_PATH}.tar.gz"
-            mkdir -p "./artifacts/upload/${DOCS_UPLOAD_DIR}" || true
-            cp "${ARTIFACT_ARCHIVE_NAME}" "./artifacts/upload/${ARTIFACT_UPLOAD_PATH}.tar.gz"
+          cp -R ./${TARGET_DIR}release/{imageflow_,libimageflow}*  ./artifacts/staging/
+          cp bindings/headers/*.h  ./artifacts/staging/headers/
+          cp bindings/headers/imageflow_default.h  ./artifacts/staging/imageflow.h
+          cp ./ci/packaging_extras/{install,uninstall}.sh ./artifacts/staging
+          rm ./artifacts/staging/*.{o,d,rlib} || true
+          rm ./artifacts/staging/*-* || true
+          (
+            cd ./artifacts/staging
+            tar czf "./archive.tar.gz" ./*
+          )
+          mkdir -p "./artifacts/upload/$(dirname "${ARTIFACT_UPLOAD_PATH}")" || true
+          cp "${ARTIFACT_ARCHIVE_NAME}" "./artifacts/upload/${ARTIFACT_UPLOAD_PATH}.tar.gz"
+          mkdir -p "./artifacts/upload/${DOCS_UPLOAD_DIR}" || true
+          cp "${ARTIFACT_ARCHIVE_NAME}" "./artifacts/upload/${ARTIFACT_UPLOAD_PATH}.tar.gz"
         env:
           TARGET_DIR: target/
           ARTIFACT_UPLOAD_PATH: /imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-macos
@@ -73,10 +87,10 @@ jobs:
       - name: Upload to release
         uses: Shopify/upload-to-release@master
         with:
-            name: imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-macos.tar.gz
-            path: ./artifacts/upload/imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-macos.tar.gz
-            repo-token: ${{ secrets.GITHUB_TOKEN }}
-            content-type: text/plain
+          name: imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-macos.tar.gz
+          path: ./artifacts/upload/imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-macos.tar.gz
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          content-type: text/plain
 
       - uses: shallwefootball/s3-upload-action@master
         with:
@@ -84,8 +98,3 @@ jobs:
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
           aws_bucket: ${{ secrets.AWS_BUCKET }}
           source_dir: ./artifacts/upload/
-
-
-
-
-
