@@ -56,7 +56,7 @@ jobs:
       - name: Test Under Valgrind
         run: ./valgrind_existing.sh
         env:
-          TARGET_DIR: target
+          TARGET_DIR: target/
       - name: Build Docs
         run: cargo doc --all --release --no-deps
       - name: Create Artifacts Header
