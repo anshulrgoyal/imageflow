@@ -13,8 +13,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@master
       - uses: FranzDiebold/github-env-vars-action@v1.3.0
-      - name: Install nasm, dssim and valgrind
-        run: brew install nasm dssim valgrind
+      - name: Install nasm, dssim
+        run: brew install nasm dssim
+      - name: Install Valgrind
+        run: |
+          brew tap LouisBrunner/valgrind
+          brew install --HEAD LouisBrunner/valgrind/valgrind
       - name: Count Unsafe code
         run: |
           (cd imageflow_core && cargo count --unsafe-statistics)
@@ -88,7 +92,7 @@ jobs:
         uses: Shopify/upload-to-release@master
         with:
           name: imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-macos.tar.gz
-          path: ./artifacts/upload/imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-macos.tar.gz
+          path: ./artifacts/upload/imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-osX.tar.gz
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           content-type: text/plain
 
