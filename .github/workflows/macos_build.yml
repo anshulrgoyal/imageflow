@@ -54,7 +54,7 @@ jobs:
       - name: Test Release
         run: cargo test --all --release
       - name: Test Under Valgrind
-        run: ./valgrind_existing.sh   1>&6
+        run: ./valgrind_existing.sh
         env:
           TARGET_DIR: target
       - name: Build Docs
