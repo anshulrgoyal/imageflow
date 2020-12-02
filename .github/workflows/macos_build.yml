@@ -21,6 +21,7 @@ jobs:
           brew install --HEAD LouisBrunner/valgrind/valgrind
       - name: Count Unsafe code
         run: |
+          cargo install cargo-count
           (cd imageflow_core && cargo count --unsafe-statistics)
           (cd imageflow_abi && cargo count --unsafe-statistics)
           (cd imageflow_tool && cargo count --unsafe-statistics)
