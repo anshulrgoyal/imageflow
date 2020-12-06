@@ -31,8 +31,8 @@ jobs:
       #     (cd imageflow_types && cargo count --unsafe-statistics)
       #     (cd imageflow_server && cargo count --unsafe-statistics)
       #     (cd c_components/lib && cargo count --unsafe-statistics)
-      - name: Test Release
-        run: cargo test --all --release
+      # - name: Test Release
+      #   run: cargo test --all --release
       # - name: Test Under Valgrind
       #   run: |
       #       TEST_BINARIES=("$@")
@@ -96,8 +96,8 @@ jobs:
       #     TARGET_DIR: target/
       #     VALGRIND_ARGS: -q --error-exitcode=9 --gen-suppressions=all
       #     TEST_BINARIES_TARGET: target/
-      - name: Check Build
-        run: cargo check --all
+      # - name: Check Build
+      #   run: cargo check --all
       - name: Build Release
         run: cargo build --all --release
         shell: bash
@@ -162,8 +162,7 @@ jobs:
             export NUGET_PACKAGE_VERSION="${CI_TAG#"v"}"
             export NUGET_COMBINED_NAME="$NUGET_PACKAGE_NAME.$NUGET_PACKAGE_VERSION"
 
-            SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}" )"
-            SCRIPT_DIR="$(cd "$SCRIPT_DIR"; pwd)"
+            SCRIPT_DIR="."
 
             STAGING_DIR="${SCRIPT_DIR}/staging"
 
