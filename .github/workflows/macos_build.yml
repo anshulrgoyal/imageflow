@@ -1,8 +1,10 @@
 #  NUGET_RUNTIME= UPLOAD_BUILD=True FETCH_COMMIT_SUFFIX=mac64
-name: Test Linux
+name: Release
 
 on:
-  push:
+    release:
+        types:
+            - published
 
 jobs:
   build:
@@ -13,10 +15,11 @@ jobs:
       - uses: FranzDiebold/github-env-vars-action@v1.3.0
       - name: Install nasm, dssim
         run: brew install nasm dssim
-      - name: Install Valgrind
-        run: |
-          brew tap LouisBrunner/valgrind
-          brew install --HEAD LouisBrunner/valgrind/valgrind
+      # Install Valgrind
+      # - name: Install Valgrind
+      #   run: |
+      #     brew tap LouisBrunner/valgrind
+      #     brew install --HEAD LouisBrunner/valgrind/valgrind
       # - name: Count Unsafe code
       #   run: |
       #     cargo install cargo-count
@@ -28,6 +31,71 @@ jobs:
       #     (cd imageflow_types && cargo count --unsafe-statistics)
       #     (cd imageflow_server && cargo count --unsafe-statistics)
       #     (cd c_components/lib && cargo count --unsafe-statistics)
+      - name: Test Release
+        run: cargo test --all --release
+      # - name: Test Under Valgrind
+      #   run: |
+      #       TEST_BINARIES=("$@")
+      #       shopt -s nullglob
+      #       TEST_BINARIES=(./${TEST_BINARIES_TARGET}release/deps/imageflow*[a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9])
+      #       shopt -u nullglob
+      #       printf "discovered binaries:\n"
+
+      #       printf "%s\n" "${TEST_BINARIES[@]}"
+
+      #       SKIP_BINARIES+=("$(ls ./"${TEST_BINARIES_TARGET}"release/test_ir4* || true )")
+      #       SKIP_BINARIES+=("$(ls ./"${TEST_BINARIES_TARGET}"release/*imageflow_helpers* || true )")
+      #       SKIP_BINARIES+=("$(ls ./"${TEST_BINARIES_TARGET}"release/*imageflow_riapi* || true )")
+      #       SKIP_BINARIES+=("$(ls ./"${TEST_BINARIES_TARGET}"release/*imageflow_types* || true )")
+      #       SKIP_BINARIES+=("$(ls ./"${TEST_BINARIES_TARGET}"release/bench_graphics* || true )")
+
+      #       function join_by { local IFS="$1"; shift; echo "$*"; }
+      #       SKIP_BINARIES_STR="$(join_by " " "${SKIP_BINARIES[@]}")"
+      #       SKIP_BINARIES_STR=" $SKIP_BINARIES_STR "
+
+      #       create_valgrind_files_in()(
+      #         (
+      #           SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+      #           cd "$1"
+      #           FILE_NAMES=(".valgrindrc" "valgrind_suppressions.txt")
+      #           for f in "${FILE_NAMES[@]}"
+      #           do
+      #             cp "${SCRIPT_DIR}/${f}" "./${f}"
+      #           done
+      #         )
+      #       )
+      #       for f in "${TEST_BINARIES[@]}"
+      #       do
+      #         if [[ "$SKIP_BINARIES_STR" == *"${f}"* ]]; then
+      #           echo "SKIPPING"
+      #         else
+
+
+      #           REL_F=$(basename "${f}")
+      #           DIR=$(dirname "${f}")
+      #           DIR="${DIR}/valgrind_${REL_F}_temp"
+      #           mkdir -p "${DIR}" || true
+
+      #           create_valgrind_files_in "$DIR"
+
+      #           FULL_COMMAND="(cd $DIR && valgrind $VALGRIND_ARGS ../$REL_F)"
+
+      #           export VALGRIND_RUNNING=1
+      #           export RUST_BACKTRACE=1
+      #           export RUST_TEST_TASKS=1
+      #           eval "$FULL_COMMAND"
+
+      #         fi
+      #       done
+
+      #       printf "\n%s Completed valgrind_existing.sh (" "$(date '+[%H:%M:%S]')"
+      #       printf "%s " "${TEST_BINARIES[@]}"
+      #       printf ")\n"
+      #   env:
+      #     TARGET_DIR: target/
+      #     VALGRIND_ARGS: -q --error-exitcode=9 --gen-suppressions=all
+      #     TEST_BINARIES_TARGET: target/
       - name: Check Build
         run: cargo check --all
       - name: Build Release
@@ -51,14 +119,9 @@ jobs:
           TARGET_CPU: nehalem
           NUGET_RUNTIME: osx-x64
           FETCH_COMMIT_SUFFIX: mac64
-      - name: Test Release
-        run: cargo test --all --release
-      - name: Test Under Valgrind
-        run: ./valgrind_existing.sh
-        env:
-          TARGET_DIR: target/
       - name: Build Docs
         run: cargo doc --all --release --no-deps
+
       - name: Create Artifacts Header
         run: |
           mkdir -p ./artifacts/staging/headers || true
@@ -87,6 +150,96 @@ jobs:
           ARTIFACT_UPLOAD_PATH: /imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-macos
           ARTIFACT_ARCHIVE_NAME: ./artifacts/staging/archive.tar.gz
           DOCS_UPLOAD_DIR}: doc
+
+      - name: Nuget to S3
+        run: |
+
+            export NUGET_PACKAGE_NAME=Imageflow.NativeTool.${PACKAGE_SUFFIX}
+
+            export NUGET_PACKAGE_VERSION="${CI_TAG#"v"}"
+            export NUGET_COMBINED_NAME="$NUGET_PACKAGE_NAME.$NUGET_PACKAGE_VERSION"
+
+            SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}" )"
+            SCRIPT_DIR="$(cd "$SCRIPT_DIR"; pwd)"
+
+            STAGING_DIR="${SCRIPT_DIR}/staging"
+
+            mkdir -p "$STAGING_DIR" || true
+
+            cd "$STAGING_DIR"
+              mkdir "$NUGET_COMBINED_NAME"
+              cd "$NUGET_COMBINED_NAME"
+
+
+              RELEASE_DIR="${SCRIPT_DIR}/../../target/release/"
+              RUNTIME_DIR="runtimes/${NUGET_RUNTIME}/native/"
+              PROPS_PATH="build/net45/${NUGET_PACKAGE_NAME}.targets"
+              NUGET_OUTPUT_DIR="${SCRIPT_DIR}/../../artifacts/nuget"
+              NUGET_OUTPUT_FILE="${NUGET_OUTPUT_DIR}/${NUGET_COMBINED_NAME}.nupkg"
+              echo RELEASE_DIR=${RELEASE_DIR}
+
+              mkdir -p "${NUGET_OUTPUT_DIR}" || true
+
+
+              if [[ "${NUGET_RUNTIME}" == *'win'* ]]; then
+                LIB_NAME=imageflow.dll
+                TOOL_NAME=imageflow_tool.exe
+              elif [[ "${NUGET_RUNTIME}" == *'osx'* ]]; then
+                LIB_NAME=libimageflow.dylib
+                TOOL_NAME=imageflow_tool
+              else
+                LIB_NAME=libimageflow.so
+                TOOL_NAME=imageflow_tool
+              fi
+
+              mkdir -p lib/netstandard1.0
+              echo "" > lib/netstandard1.0/_._
+
+              mkdir -p "$RUNTIME_DIR"
+              if [[ "$1" == "tool" ]]; then
+                  cp "${RELEASE_DIR}${TOOL_NAME}" "${RUNTIME_DIR}${TOOL_NAME}"
+              else
+                  cp "${RELEASE_DIR}${LIB_NAME}" "${RUNTIME_DIR}${LIB_NAME}"
+              fi
+
+
+              SED_NUGET_PACKAGE_NAME="$(echo $NUGET_PACKAGE_NAME | sed -e 's/[\/&]/\\&/g')"
+              SED_NUGET_PACKAGE_VERSION="$(echo $NUGET_PACKAGE_VERSION | sed -e 's/[\/&]/\\&/g')"
+              SED_NUGET_LIBFILE="$(echo $RUNTIME_DIR$LIB_NAME | sed -e 's/[\/&]/\\&/g' | sed -e 's/\//\\/g')" # fix slashes too
+
+
+              if [[ "${NUGET_RUNTIME}" == *'win'* ]]; then
+
+                if [[ "${NUGET_RUNTIME}" == *'x64'* ]]; then
+                  mkdir -p build/net45
+                  cat ../../imageflow_x64.targets | sed -e "s/:rid:/$NUGET_RUNTIME/g" > "$PROPS_PATH"
+                elif [[ "${NUGET_RUNTIME}" == *'x86'* ]]; then
+                  mkdir -p build/net45
+                  cat ../../imageflow_x86.targets | sed -e "s/:rid:/$NUGET_RUNTIME/g" > "$PROPS_PATH"
+                fi
+              fi
+
+                if [[ "$1" == "tool" ]]; then
+                  NUSPEC_NAME="native_tool.nuspec"
+              else
+                  NUSPEC_NAME="native.nuspec"
+              fi
+
+              cat ../../${NUSPEC_NAME} | sed -e "s/:id:/${SED_NUGET_PACKAGE_NAME}/g" | sed -e "s/:version:/${SED_NUGET_PACKAGE_VERSION}/g" > "${NUGET_PACKAGE_NAME}.nuspec"
+
+
+              echo "${NUGET_PACKAGE_NAME}.nuspec:"
+                cat "${NUGET_PACKAGE_NAME}.nuspec"
+                echo
+
+                rm "${NUGET_OUTPUT_FILE}" || true
+                zip -r "${NUGET_OUTPUT_FILE}" . || 7z a -tzip "${NUGET_OUTPUT_FILE}" "*"
+                echo  "${NUGET_OUTPUT_FILE} packed"
+          env:
+            CI_TAG: ${{env.GITHUB_REF_NAME_SLUG}}
+            PACKAGE_SUFFIX: macos
+            NUGET_RUNTIME: osx-x64
+
       - name: Upload to release
         uses: Shopify/upload-to-release@master
         with:
@@ -94,10 +247,17 @@ jobs:
           path: ./artifacts/upload/imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-osX.tar.gz
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           content-type: text/plain
-
-      - uses: shallwefootball/s3-upload-action@master
+      - name: Upload to S3
+        uses: shallwefootball/s3-upload-action@master
         with:
           aws_key_id: ${{ secrets.AWS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
           aws_bucket: ${{ secrets.AWS_BUCKET }}
           source_dir: ./artifacts/upload/
+      - name: Upload to S3
+        uses: shallwefootball/s3-upload-action@master
+        with:
+          aws_key_id: ${{ secrets.AWS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
+          aws_bucket: ${{ secrets.AWS_BUCKET }}
+          source_dir: ./artifacts/nuget/
