@@ -235,7 +235,7 @@ jobs:
                 rm "${NUGET_OUTPUT_FILE}" || true
                 zip -r "${NUGET_OUTPUT_FILE}" . || 7z a -tzip "${NUGET_OUTPUT_FILE}" "*"
                 echo  "${NUGET_OUTPUT_FILE} packed"
-          env:
+        env:
             CI_TAG: ${{env.GITHUB_REF_NAME_SLUG}}
             PACKAGE_SUFFIX: macos
             NUGET_RUNTIME: osx-x64
