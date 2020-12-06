@@ -100,6 +100,7 @@ jobs:
         run: cargo check --all
       - name: Build Release
         run: cargo build --all --release
+        shell: bash
         env:
           ESTIMATED_ARTIFACT_URL: https://s3-us-west-1.amazonaws.com/imageflow-nightlies/imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-${{env.PACKAGE_SUFFIX}}.tar.gz
           ESTIMATED_DOCS_URL: https://s3-us-west-1.amazonaws.com/imageflow-nightlies/doc
@@ -123,6 +124,7 @@ jobs:
         run: cargo doc --all --release --no-deps
 
       - name: Create Artifacts Header
+        shell: bash
         run: |
           mkdir -p ./artifacts/staging/headers || true
           (
@@ -152,6 +154,7 @@ jobs:
           DOCS_UPLOAD_DIR}: doc
 
       - name: Nuget to S3
+        shell: bash
         run: |
 
             export NUGET_PACKAGE_NAME=Imageflow.NativeTool.${PACKAGE_SUFFIX}
@@ -171,10 +174,10 @@ jobs:
               cd "$NUGET_COMBINED_NAME"
 
 
-              RELEASE_DIR="${SCRIPT_DIR}/../../target/release/"
+              RELEASE_DIR="${SCRIPT_DIR}/target/release/"
               RUNTIME_DIR="runtimes/${NUGET_RUNTIME}/native/"
               PROPS_PATH="build/net45/${NUGET_PACKAGE_NAME}.targets"
-              NUGET_OUTPUT_DIR="${SCRIPT_DIR}/../../artifacts/nuget"
+              NUGET_OUTPUT_DIR="${SCRIPT_DIR}/artifacts/nuget"
               NUGET_OUTPUT_FILE="${NUGET_OUTPUT_DIR}/${NUGET_COMBINED_NAME}.nupkg"
               echo RELEASE_DIR=${RELEASE_DIR}
 
