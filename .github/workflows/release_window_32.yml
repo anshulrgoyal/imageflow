@@ -79,7 +79,7 @@ jobs:
         shell: bash
         run: ./ci/pack_nuget/pack.sh tool
         env:
-          CI_TAG: ${{env.GITHUB_REF_NAME_SLUG}}
+          CI_TAG: v${{env.GITHUB_REF_NAME_SLUG}}
           PACKAGE_SUFFIX: win-x86
           NUGET_RUNTIME: win-x86
           TARGET_DIR: target/i686-pc-windows-msvc
