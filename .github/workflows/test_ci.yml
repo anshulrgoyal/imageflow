@@ -69,7 +69,7 @@ jobs:
       - name: Check Build
         run: cargo check --all
       - name: Check Build
-        run: cargo check --all
+        run: cargo test --all
         env:
           RUSTFLAGS: -C target-cpu=${{matrix.TARGET_CPU}}
       - name: Build Release
