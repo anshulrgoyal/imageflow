@@ -6,7 +6,70 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    strategy:
+      matrix:
+        include:
+          - name: ubuntu_16_04-x86_64
+            os: ubuntu-16.04
+            FETCH_COMMIT_SUFFIX: linux64
+            TARGET_CPU: x86-64
+            NUGET_RUNTIME: linux-x64
+
+          - name: ubuntu_18_04-x86_64
+            os: ubuntu-18.04
+            TARGET_CPU: x86-64
+            FETCH_COMMIT_SUFFIX: linux64_glibc227
+            NUGET_RUNTIME: ubuntu.18.04-x64
+
+          - name: ubuntu_20_04-x86_64
+            os: ubuntu-20.04
+            TARGET_CPU: x86-64
+            FETCH_COMMIT_SUFFIX: linux64_glibc231
+            NUGET_RUNTIME: ubuntu.20.04-x64
+
+          - name: osx_11_0-x86_64
+            os: macos-11.0
+            TARGET_CPU: x86-64
+            FETCH_COMMIT_SUFFIX: mac64
+            NUGET_RUNTIME: osx-x64
+
+          - name: osx_10_11-x86_64
+            os: macos-10.15
+            TARGET_CPU: x86-64
+            FETCH_COMMIT_SUFFIX: mac64
+            NUGET_RUNTIME: osx-x64
+
+          - name: win-x86_64
+            os: windows-2019
+            TARGET_CPU: x86-64
+            FETCH_COMMIT_SUFFIX: win-x86_64
+            NUGET_RUNTIME: win-x64
+
+          - name: ubuntu_16_04-x86_64-haswell
+            os: ubuntu-16.04
+            TARGET_CPU: haswell
+            FETCH_COMMIT_SUFFIX: linux64_haswell
+            NUGET_RUNTIME: linux-x64
+
+          - name: ubuntu_18_04-x86_64-haswell
+            os: ubuntu-18.04
+            TARGET_CPU: haswell
+            FETCH_COMMIT_SUFFIX: linux64_haswell_glibc227
+            NUGET_RUNTIME: ubuntu.18.04-x64
+
+          - name: ubuntu_20_04-x86_64-haswell
+            os: ubuntu-20.04
+            TARGET_CPU: haswell
+            FETCH_COMMIT_SUFFIX: linux64_haswell_glibc231
+            NUGET_RUNTIME: ubuntu.20.04-x64
+
+          - name: win-x86_64-haswell
+            os: windows-2019
+            TARGET_CPU: haswell
+            FETCH_COMMIT_SUFFIX: win-x86_64-haswell
+            NUGET_RUNTIME: win-x64
+
+    runs-on: ${{matrix.os}}
     steps:
       - name: Checkout code
         uses: actions/checkout@master
@@ -110,13 +173,12 @@ jobs:
           CI_TAG: ${{env.GITHUB_REF_NAME_SLUG}}
           CI_REPO: ${{env.GITHUB_REPOSITORY}}
           CI: True
-          TARGET: x86_64-apple-darwin
           OPT_LEVEL: 0
           DEBUG: False
           PROFILE: release
-          TARGET_CPU: nehalem
-          NUGET_RUNTIME: osx-x64
-          FETCH_COMMIT_SUFFIX: mac64
+          TARGET_CPU: ${{matrix.TARGET_CPU}}
+          FETCH_COMMIT_SUFFIX: ${{matrix.FETCH_COMMIT_SUFFIX}}
+
       - name: Build Docs
         run: cargo doc --all --release --no-deps
 
@@ -146,7 +208,7 @@ jobs:
           cp "${ARTIFACT_ARCHIVE_NAME}" "./artifacts/upload/${ARTIFACT_UPLOAD_PATH}.tar.gz"
         env:
           TARGET_DIR: target/
-          ARTIFACT_UPLOAD_PATH: /imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-macos
+          ARTIFACT_UPLOAD_PATH: /imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-${{matrix.name}}
           ARTIFACT_ARCHIVE_NAME: ./artifacts/staging/archive.tar.gz
           DOCS_UPLOAD_DIR}: doc
 
@@ -155,8 +217,8 @@ jobs:
         run: ./ci/pack_nuget/pack.sh tool
         env:
           CI_TAG: v${{env.GITHUB_REF_NAME_SLUG}}
-          PACKAGE_SUFFIX: macos
-          NUGET_RUNTIME: osx-x64
+          PACKAGE_SUFFIX: ${{matrix.name}}
+          NUGET_RUNTIME: ${{matrix.NUGET_RUNTIME}}
 
       # - name: Upload to release
       #   uses: Shopify/upload-to-release@master
