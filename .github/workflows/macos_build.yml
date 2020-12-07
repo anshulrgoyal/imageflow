@@ -144,7 +144,6 @@ jobs:
           cp "${ARTIFACT_ARCHIVE_NAME}" "./artifacts/upload/${ARTIFACT_UPLOAD_PATH}.tar.gz"
           mkdir -p "./artifacts/upload/${DOCS_UPLOAD_DIR}" || true
           cp "${ARTIFACT_ARCHIVE_NAME}" "./artifacts/upload/${ARTIFACT_UPLOAD_PATH}.tar.gz"
-          echo "PATH_TO_ARTIFACT=./artifacts/upload/${ARTIFACT_UPLOAD_PATH}.tar.gz" >> $GITHUB_ENV
         env:
           TARGET_DIR: target/
           ARTIFACT_UPLOAD_PATH: /imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-macos
@@ -167,16 +166,18 @@ jobs:
       #     repo-token: ${{ secrets.GITHUB_TOKEN }}
       #     content-type: text/plain
       - name: Upload to S3
-        uses: jakejarvis/s3-sync-action@master
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
-          AWS_S3_BUCKET: ${{ secrets.AWS_BUCKET }}
-          SOURCE_DIR: ${{env.PATH_TO_ARTIFACT}}
+        uses: shallwefootball/s3-upload-action@master
+        with:
+          aws_key_id: ${{ secrets.AWS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
+          aws_bucket: ${{ secrets.AWS_BUCKET }}
+          source_dir: ./artifacts/upload/
+          destination_dir: ''
       - name: Upload to S3
-        uses: jakejarvis/s3-sync-action@master
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
-          AWS_S3_BUCKET: ${{ secrets.AWS_BUCKET }}
-          SOURCE_DIR: ${{env.NUGET_OUTPUT_FILE}}
+        uses: shallwefootball/s3-upload-action@master
+        with:
+          aws_key_id: ${{ secrets.AWS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
+          aws_bucket: ${{ secrets.AWS_BUCKET }}
+          source_dir: ./artifacts/nuget/
+          destination_dir: ''
