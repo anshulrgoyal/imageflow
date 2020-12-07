@@ -176,7 +176,7 @@ jobs:
           CI_SEQUENTIAL_BUILD_NUMBER: ${{env.GITHUB_RUN_NUMBER}}
           CI_BUILD_URL: https://github.com/${{env.GITHUB_REPOSITORY}}/actions/runs/${{github.job_id}}
           CI_JOB_URL: https://github.com/${{env.GITHUB_REPOSITORY}}/actions/runs/${{github.job_id}}
-          CI_JOB_TITLE: Github ${github.job_id} ${macos}
+          CI_JOB_TITLE: Github ${{github.job_id}} ${{matrix.name}}
           CI_STRING: Github actions
           CI_PULL_REQUEST_INFO: ${{github.event_name!='release'}}
           CI_TAG: ${{env.GITHUB_REF_NAME_SLUG}}
@@ -187,6 +187,7 @@ jobs:
           PROFILE: release
           TARGET_CPU: ${{matrix.TARGET_CPU}}
           FETCH_COMMIT_SUFFIX: ${{matrix.FETCH_COMMIT_SUFFIX}}
+          RUSTFLAGS: -C target-cpu=${{matrix.TARGET_CPU}}
 
       - name: Build Docs
         run: cargo doc --all --release --no-deps
