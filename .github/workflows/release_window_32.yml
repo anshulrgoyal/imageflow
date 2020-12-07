@@ -20,8 +20,8 @@ jobs:
             override: true
             components: rustfmt, clippy
             target: i686-pc-windows-msvc
-      - name: Check Build
-        run: cargo check --all
+      # - name: Check Build
+      #   run: cargo check --all --target=i686-pc-windows-msvc
       - name: Build Release
         run: cargo build --all --release --target=i686-pc-windows-msvc
         shell: bash
@@ -43,7 +43,7 @@ jobs:
           FETCH_COMMIT_SUFFIX: win-x86
 
       - name: Build Docs
-        run: cargo doc --all --release --no-deps
+        run: cargo doc --all --release --no-deps --target=i686-pc-windows-msvc
 
       - name: Create Artifacts Header
         shell: bash
@@ -70,7 +70,7 @@ jobs:
           mkdir -p "./artifacts/upload/${DOCS_UPLOAD_DIR}" || true
           cp "${ARTIFACT_ARCHIVE_NAME}" "./artifacts/upload/${ARTIFACT_UPLOAD_PATH}.tar.gz"
         env:
-          TARGET_DIR: target/
+          TARGET_DIR: target/i686-pc-windows-msvc/
           ARTIFACT_UPLOAD_PATH: /imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-win-x86
           ARTIFACT_ARCHIVE_NAME: ./artifacts/staging/archive.tar.gz
           DOCS_UPLOAD_DIR}: doc
@@ -82,14 +82,15 @@ jobs:
           CI_TAG: ${{env.GITHUB_REF_NAME_SLUG}}
           PACKAGE_SUFFIX: win-x86
           NUGET_RUNTIME: win-x86
+          TARGET_DIR: target/i686-pc-windows-msvc
 
-      - name: Upload to release
-        uses: Shopify/upload-to-release@master
-        with:
-          name: imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-win-x86.tar.gz
-          path: ./artifacts/upload/imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-win-x86.tar.gz
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          content-type: text/plain
+      # - name: Upload to release
+      #   uses: Shopify/upload-to-release@master
+      #   with:
+      #     name: imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-win-x86.tar.gz
+      #     path: ./artifacts/upload/imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-win-x86.tar.gz
+      #     repo-token: ${{ secrets.GITHUB_TOKEN }}
+      #     content-type: text/plain
       - name: Upload to S3
         uses: shallwefootball/s3-upload-action@master
         with:
