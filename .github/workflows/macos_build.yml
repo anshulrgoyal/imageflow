@@ -2,7 +2,9 @@
 name: Release
 
 on:
-  push:
+  release:
+    types:
+      - published
 
 jobs:
   build:
@@ -101,8 +103,8 @@ jobs:
       #     (cd imageflow_types && cargo count --unsafe-statistics)
       #     (cd imageflow_server && cargo count --unsafe-statistics)
       #     (cd c_components/lib && cargo count --unsafe-statistics)
-      # - name: Test Release
-      #   run: cargo test --all --release
+      - name: Test Release
+        run: cargo test --all --release
       # - name: Test Under Valgrind
       #   run: |
       #       TEST_BINARIES=("$@")
@@ -165,8 +167,8 @@ jobs:
       #     TARGET_DIR: target/
       #     VALGRIND_ARGS: -q --error-exitcode=9 --gen-suppressions=all
       #     TEST_BINARIES_TARGET: target/
-      # - name: Check Build
-      #   run: cargo check --all
+      - name: Check Build
+        run: cargo check --all
       - name: Build Release
         run: cargo build --all --release
         shell: bash
@@ -230,13 +232,13 @@ jobs:
           PACKAGE_SUFFIX: ${{matrix.name}}
           NUGET_RUNTIME: ${{matrix.NUGET_RUNTIME}}
 
-      # - name: Upload to release
-      #   uses: Shopify/upload-to-release@master
-      #   with:
-      #     name: imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-macos.tar.gz
-      #     path: ./artifacts/upload/imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-osX.tar.gz
-      #     repo-token: ${{ secrets.GITHUB_TOKEN }}
-      #     content-type: text/plain
+      - name: Upload to release
+        uses: Shopify/upload-to-release@master
+        with:
+          name: imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-${{matrix.name}}.tar.gz
+          path: ./artifacts/upload/imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-${{matrix.name}}.tar.gz
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          content-type: text/plain
       - name: Upload to S3
         uses: shallwefootball/s3-upload-action@master
         with:
