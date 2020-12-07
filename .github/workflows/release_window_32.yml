@@ -2,7 +2,9 @@
 name: Release Window 32
 
 on:
-  push:
+  release:
+    types:
+      - published
 
 jobs:
   build:
@@ -16,12 +18,12 @@ jobs:
       - name: Install latest nightly
         uses: actions-rs/toolchain@v1
         with:
-            toolchain: stable
-            override: true
-            components: rustfmt, clippy
-            target: i686-pc-windows-msvc
-      # - name: Check Build
-      #   run: cargo check --all --target=i686-pc-windows-msvc
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
+          target: i686-pc-windows-msvc
+      - name: Check Build
+        run: cargo check --all
       - name: Build Release
         run: cargo build --all --release --target=i686-pc-windows-msvc
         shell: bash
@@ -84,13 +86,13 @@ jobs:
           NUGET_RUNTIME: win-x86
           TARGET_DIR: target/i686-pc-windows-msvc
 
-      # - name: Upload to release
-      #   uses: Shopify/upload-to-release@master
-      #   with:
-      #     name: imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-win-x86.tar.gz
-      #     path: ./artifacts/upload/imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-win-x86.tar.gz
-      #     repo-token: ${{ secrets.GITHUB_TOKEN }}
-      #     content-type: text/plain
+      - name: Upload to release
+        uses: Shopify/upload-to-release@master
+        with:
+          name: imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-win-x86.tar.gz
+          path: ./artifacts/upload/imageflow-${{env.GITHUB_REF_NAME_SLUG}}-${{env.GITHUB_SHA_SHORT}}-win-x86.tar.gz
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          content-type: text/plain
       - name: Upload to S3
         uses: shallwefootball/s3-upload-action@master
         with:
