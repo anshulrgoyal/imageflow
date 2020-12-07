@@ -68,7 +68,7 @@ jobs:
         run: cargo install dssim
       - name: Check Build
         run: cargo check --all
-      - name: Check Build
+      - name: Test Build
         run: cargo test --all
         env:
           RUSTFLAGS: -C target-cpu=${{matrix.TARGET_CPU}}
