@@ -1004,6 +1004,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "hex"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "644f9158b2f133fd50f5fb3242878846d9eb792e445c893805ff0e3824006e35"
+
+[[package]]
 name = "http"
 version = "0.1.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1253,6 +1259,7 @@ dependencies = [
 name = "imageflow_core"
 version = "0.1.0"
 dependencies = [
+ "base64 0.13.0",
  "blake2-rfc",
  "byteorder",
  "chashmap",
@@ -1265,6 +1272,7 @@ dependencies = [
  "fnv",
  "getopts",
  "gif",
+ "hex",
  "hyper 0.13.8",
  "imageflow_c_components",
  "imageflow_helpers",
@@ -1363,6 +1371,7 @@ dependencies = [
 name = "imageflow_server"
 version = "0.1.0"
 dependencies = [
+ "base64 0.13.0",
  "bincode",
  "blake2-rfc",
  "chrono",
